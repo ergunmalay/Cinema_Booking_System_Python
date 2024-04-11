@@ -13,6 +13,7 @@ def new_user():
         file.write(name + "," + password + "\n")
     return name
 
+
 def login():
     print("Please enter your username: ")
     global name
@@ -31,6 +32,7 @@ def login():
             return display_menu()
     print("Invalid username or password. Please try again.")
     return login()
+
 
 def book_seat():
     print("Please enter the row number (1-10):")
@@ -58,6 +60,7 @@ def book_seat():
     print("Seat booked successfully!")
     return display_menu()
 
+
 def save_user_seats(name, row, seat):
     # Check if the file exists
     if not os.path.exists("user_seats.txt"):
@@ -73,6 +76,7 @@ def save_user_seats(name, row, seat):
                 return
         file.write(name + "," + str(row) + "," + str(seat) + "\n")
 
+
 def load_user_seats(name):
     user_seats = []
     with open("user_seats.txt", "r") as file:
@@ -82,8 +86,9 @@ def load_user_seats(name):
                 user_seats.append((int(row), int(seat)))
     return user_seats
 
+
 def cancel_booking():
-    print("Here are your bookings:") # Display the user's bookings
+    print("Here are your bookings:")  # Display the user's bookings
     user_seats = load_user_seats(name)
     if user_seats:
         for row, seat in user_seats:
@@ -91,10 +96,10 @@ def cancel_booking():
     else:
         print("You have no bookings.")
         return display_menu()
-    
+
     # Show the seating arrangement
     print("Here is the current seating arrangement:")
-    
+
     # Load the seating arrangement from the file and replace the booked seats with "B"
     seating_arrangement = load_seating_from_file()
     for row, seat in user_seats:
@@ -134,6 +139,7 @@ def cancel_booking():
         print("This seat is not booked. Please select another seat.")
         return cancel_booking()
 
+
 def is_file_empty():
     if not os.path.exists("seating.txt"):
         create_seating_file()
@@ -148,6 +154,7 @@ def is_file_empty():
     # If the seating arrangement is empty, recreate it
     create_seating_file()
 
+
 def create_seating_file():
     with open("seating.txt", "w") as file:
         dashes = 20
@@ -156,6 +163,7 @@ def create_seating_file():
             line = " " * i + "-" * dashes + "\n"
             file.write(line)
             dashes -= 2
+
 
 def display_seating():
     print("Here is the current seating arrangement:")
@@ -172,10 +180,13 @@ def display_seating():
     else:
         print("Invalid option. Please try again.")
         return display_seating()
-    
+
+
 def check_seating_price(row):
-    case = { 1:'£100', 2:'£80', 3:'£70', 4:'£70', 5:'£60', 6:'£40', 7:'£20' }
+    case = {1: '£100', 2: '£80', 3: '£70',
+            4: '£70', 5: '£60', 6: '£40', 7: '£20'}
     return case.get(row)
+
 
 def check_bookings():
     user_seats = load_user_seats(name)
@@ -183,11 +194,13 @@ def check_bookings():
         print("Here are your bookings:")
         for row, seat in user_seats:
             print("-------------------------")
-            print("Row:", row, "\nSeat:", seat, "\nPrice:",check_seating_price(row))
+            print("Row:", row, "\nSeat:", seat,
+                  "\nPrice:", check_seating_price(row))
             print("-------------------------")
     else:
         print("You have no bookings.")
     return display_menu()
+
 
 def display_menu():
     print("Please select an option:")
@@ -217,6 +230,7 @@ def print_seating_arrangement(seating_arrangement):
     for row in seating_arrangement:
         print(row[0] + row[1])
 
+
 def load_seating_from_file():
     seating_arrangement = []
     with open("seating.txt", "r") as file:
@@ -231,6 +245,7 @@ def load_seating_from_file():
             line_number += 1
     return seating_arrangement
 
+
 def save_seating_to_file(seating_arrangement):
     with open("seating.txt", "w") as file:
         for row in seating_arrangement:
@@ -238,16 +253,138 @@ def save_seating_to_file(seating_arrangement):
             leading_spaces = row[0]
             file.write(" " * len(leading_spaces) + row[1] + "\n")
 
-def main():
-    is_file_empty()
+
+def normal_user():
     print("Are you a new user? (Y/N)")
     response = input()
     if response.lower() == "y":
         new_user()
         display_menu()  # Call display_menu() after new_user()
-    else:
+    elif response.lower() == "n":
         login()
         display_menu()  # Call display_menu() after login()
+    else:
+        print("Invalid option. Please try again.")
+        normal_user()
+
+
+def admin_login():
+    print("Welcome, admin!")
+    print("Please enter the admin password:")
+    password = input()
+    if password == "admin":
+        print("Access granted!")
+        admin_display_menu()
+    else:
+        print("Incorrect password. Access denied.")
+        admin_login()
+
+
+def admin_display_menu():
+    print("Here is the current seating arrangement:")
+    print_seating_arrangement(load_seating_from_file())
+    print("Would you like to book/cancel or exit? (book/cancel/exit)")
+    action = input()
+    if action == "book":
+        return admin_book_seat()
+    elif action == "cancel":
+        return admin_cancel_booking()
+    elif action == "exit":
+        print("Thank you for using the cinema booking system. Goodbye!")
+        exit()
+    else:
+        print("Invalid option. Please try again.")
+        return admin_display_menu()
+
+
+def admin_book_seat():  # ask for row and seat and which user to book for and book the seat for the user
+    print("Please enter the username of the user you want to book the seat for:")
+    user_name = input()
+    print("Please enter the row number (1-10) of the seat you want to book:")
+    row = int(input())
+    print("Please enter the seat number (1-10) of the seat you want to book:")
+    seat = int(input())
+
+    seating_arrangement = load_seating_from_file()
+
+    # Check if row and seat are within the range
+    if not (1 <= row <= 10) or not (1 <= seat <= 10):
+        print("Invalid row or seat number. Please try again.")
+        return admin_book_seat()
+
+    # Check if the seat is already booked
+    if seating_arrangement[row - 1][1][seat - 1] == "X":
+        print("This seat is already booked. Please select another seat.")
+        return admin_book_seat()
+
+    # Book the seat by marking it with an "X"
+    seating_arrangement[row - 1][1] = seating_arrangement[row - 1][1][:seat - 1] + "X" + seating_arrangement[row - 1][1][seat:]
+
+    save_seating_to_file(seating_arrangement)
+    save_user_seats(user_name, row, seat)
+    print("Seat booked successfully!")
+    return admin_display_menu()
+
+
+def admin_cancel_booking():  # ask for name and seat to cancel booking for a user
+    print("Please enter the username of the user you want to cancel the booking for:")
+    user_name = input()
+    user_seats = load_user_seats(user_name)
+
+    if user_seats:
+        print("Here are the bookings for user:", user_name)
+        for row, seat in user_seats:
+            print("Row:", row, "Seat:", seat)
+    else:
+        print("This user has no bookings.")
+        return admin_display_menu()
+
+    print("Please enter the row number (1-10) of the seat you want to cancel:")
+    row = int(input())
+    print("Please enter the seat number (1-10) of the seat you want to cancel:")
+    seat = int(input())
+
+    seating_arrangement = load_seating_from_file()
+
+    # Check if row and seat are within the range
+    if not (1 <= row <= 10) or not (1 <= seat <= 10):
+        print("Invalid row or seat number. Please try again.")
+        return admin_cancel_booking()
+
+    # Check if the seat is already booked by the mentioned user and cancel the booking if it is booked by another user or not booked at all by the mentioned user
+    if (row, seat) in user_seats:
+        # Cancel the booking by marking it with a "-"
+        seating_arrangement[row - 1][1] = seating_arrangement[row - 1][1][:seat - 1] + "-" + seating_arrangement[row - 1][1][seat:]
+        save_seating_to_file(seating_arrangement)
+        # Remove the booking from the user_seats file
+        with open("user_seats.txt", "r") as file:
+            lines = file.readlines()
+        with open("user_seats.txt", "w") as file:
+            for line in lines:
+                user_name, user_row, user_seat = line.strip().split(",")
+                if user_name == user_name and int(user_row) == row and int(user_seat) == seat:
+                    continue
+                file.write(line)
+
+        print("Booking canceled successfully!")
+        return admin_display_menu()
+    else:
+        print("This seat is not booked. Please select another seat.")
+        return admin_cancel_booking()
+
+
+def main():
+    is_file_empty()
+    print("Welcome to the cinema booking system! Are you a normal user or an admin? (normal/admin)")
+    user_type = input()
+    if user_type == "normal":
+        normal_user()
+    elif user_type == "admin":
+        admin_login()
+    else:
+        print("Invalid option. Please try again.")
+        main()
+
 
 if __name__ == "__main__":
     main()
