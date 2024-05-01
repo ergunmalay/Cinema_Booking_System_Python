@@ -1,12 +1,9 @@
 import os
-
+from modules import userManager, seatingManager
+import Main
 
 # Function to book a seat by a user
 def book_seat():
-
-    from seatingManager import load_seating_from_file, save_seating_to_file, save_user_seats, print_seating_arrangement, check_seating_price
-    from Main import display_menu
-    from userManager import name
 
     # While true and row is within the range, ask the user to enter the row number
     while True:
@@ -19,6 +16,7 @@ def book_seat():
         except ValueError:
             print("Invalid row number. Please try again.")
             continue
+
 
     # Calculate the number of dashes for the row based on the row number entered by the user this is the number of seats in the row
     dashes = 20 - 2 * (row - 1)
@@ -34,7 +32,7 @@ def book_seat():
             print("Invalid seat number. Please try again.")
             continue
     
-    seating_arrangement = load_seating_from_file()
+    seating_arrangement = seatingManager.load_seating_from_file()
 
     # Check if the seat is already booked
     if seating_arrangement[row - 1][1][seat - 1] == "X":
@@ -42,7 +40,7 @@ def book_seat():
         return book_seat()
     
     # Show the price of the seat
-    print("The price of the seat is: $", check_seating_price(row))
+    print("The price of the seat is: $", seatingManager.check_seating_price(row))
 
     # Confirm the booking
     while True:
@@ -59,41 +57,38 @@ def book_seat():
     # Book the seat by marking it with an "X"
     seating_arrangement[row - 1][1] = seating_arrangement[row - 1][1][:seat - 1] + "X" + seating_arrangement[row - 1][1][seat:]
 
-    save_seating_to_file(seating_arrangement)
-    save_user_seats(name, row, seat)
+    seatingManager.save_seating_to_file(seating_arrangement)
+    seatingManager.save_user_seats(userManager.name, row, seat)
     print("\nSeat booked successfully!\n\n")
-    return display_menu()
+    return Main.display_menu()
 
 # Function to cancel a booking made by a user
 def cancel_booking():
-    from seatingManager import load_seating_from_file, save_seating_to_file, load_user_seats, print_seating_arrangement, display_seating
-    from Main import display_menu
-    from userManager import name
 
     print("Here are your bookings:")  # Display the user's bookings
-    user_seats = load_user_seats(name)
+    user_seats = seatingManager.load_user_seats(userManager.name)
     if user_seats:
         for row, seat in user_seats:
             print("Row:", row, "Seat:", seat)
     else:
         print("You have no bookings.")
-        return display_menu()
+        return Main.display_menu()
 
     # Show the seating arrangement
     print("Here is the current seating arrangement:")
 
     # Load the seating arrangement from the file and replace the booked seats with "B"
-    seating_arrangement = load_seating_from_file()
+    seating_arrangement = seatingManager.load_seating_from_file()
     for row, seat in user_seats:
         seating_arrangement[row - 1][1] = seating_arrangement[row - 1][1][:seat - 1] + "B" + seating_arrangement[row - 1][1][seat:]
-    print_seating_arrangement(seating_arrangement)
+    seatingManager.print_seating_arrangement(seating_arrangement)
 
     dashes = 20 - 2 * (row - 1)
 
     row = int(input("Please enter the row number (1-7) of the seat you want to cancel:")) # Get the row number of the seat to cancel
     seat = int(input("Please enter the seat number (1-"+ str(dashes) +") of the seat you want to cancel:")) # Get the seat number of the seat to cancel
 
-    seating_arrangement = load_seating_from_file() # Load the seating arrangement from the file
+    seating_arrangement = seatingManager.load_seating_from_file() # Load the seating arrangement from the file
 
 
     # Check if row and seat are within the range
@@ -104,37 +99,34 @@ def cancel_booking():
     # Check if the seat is already booked
     if seating_arrangement[row - 1][1][seat - 1] == "X": # If the seat is already booked
         seating_arrangement[row - 1][1] = seating_arrangement[row - 1][1][:seat - 1] + "-" + seating_arrangement[row - 1][1][seat:] # Mark the seat as available by replacing "X" with "-"
-        save_seating_to_file(seating_arrangement) # Save the updated seating arrangement to the file
+        seatingManager.save_seating_to_file(seating_arrangement) # Save the updated seating arrangement to the file
         with open("user_seats.txt", "r") as file: # Open the user_seats file in read mode
             lines = file.readlines() # Read all the lines from the file
         with open("user_seats.txt", "w") as file: # Open the user_seats file in write mode
             for line in lines: # Iterate through each line in the file
                 user_name, user_row, user_seat = line.strip().split(",") # Split the line into user_name, user_row, and user_seat
-                if user_name == name and int(user_row) == row and int(user_seat) == seat: # If the booking matches the user's input
+                if user_name == userManager.name and int(user_row) == row and int(user_seat) == seat: # If the booking matches the user's input
                     continue # Skip writing the line to the file
                 file.write(line) # Write the line to the file
 
         print("Booking canceled successfully!")
-        return display_seating()
+        return seatingManager.display_seating()
     else:
         print("This seat is not booked. Please select another seat.")
         return cancel_booking()
     
 # Function to display the user's bookings
 def check_bookings():
-    from userManager import name
-    from seatingManager import load_user_seats, check_seating_price
-    from Main import display_menu
 
-    user_seats = load_user_seats(name) # Load the bookings made by the user
+    user_seats = seatingManager.load_user_seats(userManager.name) # Load the bookings made by the user
     if user_seats: # If the user has bookings
         print("Here are your bookings:") # Display the user's bookings
         for row, seat in user_seats:
             print("-------------------------")
-            print("Row:", row, "\nSeat:", seat, "\nPrice:", check_seating_price(row))
+            print("Row:", row, "\nSeat:", seat, "\nPrice:", seatingManager.check_seating_price(row))
             print("-------------------------")
         input("Press Enter to return to the main menu...")
     else:
         print("You have no bookings.") # Print a message if the user has no bookings
         input("Press Enter to return to the main menu...")
-    return display_menu()
+    return Main.display_menu()

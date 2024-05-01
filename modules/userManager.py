@@ -1,5 +1,8 @@
 import os
+from modules import seatingManager
+import Main
 
+name = ""  # Initialize the name variable to store the user's name
 
 def new_user():
     name = input("Welcome to the cinema!\nPlease enter your preferred username: ")
@@ -12,9 +15,8 @@ def new_user():
 
 
 def login():  # Function to handle the login process
-    from Main import display_menu  # Import the display_menu() function from Main.py
     print("\nPlease enter your username:\n")  # Ask the user for their username
-    global name  # Declare name as a global variable
+    global name  # Declare the name variable as global
     name = input()  # Get the user's input for the username
     # Get the user's input for the password
     password = input("\nPlease enter your password:\n")
@@ -29,6 +31,23 @@ def login():  # Function to handle the login process
         if stored_name == name and stored_password == password:
             # Go to display menu
             print("Welcome back, " + name + "!")
-            return display_menu()
+            return Main.display_menu()
     print("Invalid username or password. Please try again.")
     return login()
+
+def check_user_file(): # Function to check if the user file exists
+    if not os.path.exists("users.txt"): # Check if the file exists
+        with open("users.txt", "w") as file: # Open the file in write mode
+            file.write("admin,admin\n") # Write the default admin username and password to the file 
+    return
+
+def check_seating_file():
+    if not os.path.exists("seating.txt"):  # Check if the file exists
+        seatingManager.create_seating_file()  # Create the seating arrangement file if it does not exist
+    return  # Return if the file does not exist
+
+def check_user_seats_file():
+    if not os.path.exists("user_seats.txt"): # Check if the file exists
+        with open("user_seats.txt", "w") as file: # Open the file in write mode
+            file.write("") # Write an empty string to the file
+    return

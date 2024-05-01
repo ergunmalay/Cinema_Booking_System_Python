@@ -1,6 +1,10 @@
 import os
+from modules import userManager, bookingManager
+import Main
 
 # Function to save the booked seats of a user to a file
+
+# Add file opening Exception to each file opening
 
 
 def save_user_seats(name, row, seat):
@@ -53,9 +57,8 @@ def put_user_seats_back():  # Function to put user_seats back into the seating a
 
 
 def is_file_empty():  # Function to check if the seating arrangement file is empty
-    if not os.path.exists("seating.txt"):  # Check if the file exists
-        create_seating_file()  # Create the seating arrangement file if it does not exist
-        return  # Return if the file does not exist
+
+    userManager.check_seating_file()  # Check if the seating arrangement file exists
 
     # Check if the seating arrangement is empty
     with open("seating.txt", "r") as file:  # Open the file in read mode
@@ -85,24 +88,20 @@ def create_seating_file():  # Function to create the seating arrangement file wi
 
 # Function to display the seating arrangement to the user
 def display_seating():  # Function to display the seating arrangement to the user
-    # Import book_seat() and cancel_booking() functions from bookingManager.py
-    from bookingManager import book_seat, cancel_booking
-
     # Print the message to the user
     print("Here is the current seating arrangement:")
     # Print the seating arrangement to the console
     print_seating_arrangement(load_seating_from_file())
     # Ask the user for the next action
-    print("Would you like to book a seat, cancel a booking, or exit the program? (book/cancel/exit)")
-    action = input()  # Get the user's input
-    if action == "book":  # If the user wants to book a seat
-        return book_seat()  # Call the book_seat() function
-    elif action == "cancel":  # If the user wants to cancel a booking
-        return cancel_booking()  # Call the cancel_booking() function
-    elif action == "exit":  # If the user wants to exit the program
+    action = input("Would you like to book a seat, cancel a booking, or exit the program? \n1. book\n2. cancel\n3. Back🔙\n\n")  # Get the user's input
+    if action == "1":  # If the user wants to book a seat
+        return bookingManager.book_seat()  # Call the book_seat() function
+    elif action == "2":  # If the user wants to cancel a booking
+        return bookingManager.cancel_booking()  # Call the cancel_booking() function
+    elif action == "3":  # If the user wants to exit the program
         # Print the exit message
         print("Thank you for using the cinema booking system. Goodbye!")
-        exit()  # Exit the program
+        return Main.display_menu()  # Call the display_menu() function from Main.py
     else:
         print("Invalid option. Please try again.")
         return display_seating()
